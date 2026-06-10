@@ -1,0 +1,12 @@
+# Common ignores
+
+## Directories
+.settings/
+target/
+
+## Files
+.classpath
+.project
+*.jsfdia
+
+# Project ignores
