@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "gitlab": {
+      "command": "npx",
+      "args": ["-y", "@zereight/mcp-gitlab"],
+      "env": {
+        "GITLAB_USE_OAUTH": "true",
+        "GITLAB_OAUTH_CLIENT_ID": "ca28452b70aca971aac54e1ee62430506cfd57790d3d36c99fe05b3ad982d7db",
+        "GITLAB_OAUTH_REDIRECT_URI": "http://127.0.0.1:8888/callback",
+        "GITLAB_API_URL": "https://gitlab.tre-pr.jus.br/api/v4",
+        "GITLAB_READ_ONLY_MODE": "false",
+        "USE_GITLAB_WIKI": "true",
+        "USE_MILESTONE": "true",
+        "USE_PIPELINE": "true",
+        "NODE_OPTIONS": "--use-system-ca"
+      }
+    }
+  }
+}
