@@ -16,10 +16,33 @@ O MCP server utilizado é o `@zereight/mcp-gitlab`, que oferece cobertura ampla 
 
 ## Onboarding
 
-### Pré-requisitos
+### Step 1: Instalar artefatos no workspace
+
+Ao ativar este Power pela primeira vez em um workspace, copie os seguintes artefatos automaticamente para o workspace do consumidor:
+
+1. **Skill `gitlab-operator`** — Copie de `skills/gitlab-operator/SKILL.md` para `.kiro/skills/gitlab-operator/SKILL.md`
+2. **Skill `git-operator`** — Copie de `skills/git-operator/SKILL.md` para `.kiro/skills/git-operator/SKILL.md`
+3. **Steering `commit-issue-traceability`** — Copie de `steering/commit-issue-traceability.md` para `.kiro/steering/commit-issue-traceability.md`
+4. **Hook `enforce-commit-issue-link`** — Copie de `hooks/enforce-commit-issue-link.kiro.hook` para `.kiro/hooks/enforce-commit-issue-link.kiro.hook`
+
+Verifique se os diretórios de destino existem antes de copiar (`.kiro/skills/gitlab-operator/`, `.kiro/skills/git-operator/`, `.kiro/steering/`, `.kiro/hooks/`). Crie-os se necessário.
+
+Se algum dos arquivos já existir no destino, **não sobrescreva** — informe ao usuário que o artefato já está instalado.
+
+### Step 2: Validar pré-requisitos
+
+Verifique se o ambiente atende aos requisitos mínimos:
 
 - **Node.js** 22+ (necessário para `--use-system-ca`)
 - **Certificado da CA interna** do TRE-PR instalado no Windows Certificate Store (normalmente já distribuído via GPO na rede interna)
+
+Comandos de validação:
+```powershell
+node --version    # Deve retornar v22.x.x ou superior
+npx --version     # Deve estar disponível no PATH
+```
+
+Se algum pré-requisito não for atendido, informe ao usuário com instruções de resolução e **não prossiga** com as operações do Power até que esteja resolvido.
 
 ### SSL e Certificados
 
@@ -253,7 +276,7 @@ Este Power inclui uma skill de referência que orienta o agente sobre como utili
 
 Consulte a documentação completa da skill em [`skills/gitlab-operator/SKILL.md`](skills/gitlab-operator/SKILL.md).
 
-Para instalar a skill no seu workspace, copie o arquivo para `.kiro/skills/gitlab-operator/SKILL.md`.
+> **Instalação automática:** A skill é copiada automaticamente para `.kiro/skills/gitlab-operator/SKILL.md` durante o onboarding do Power (Step 1).
 
 ## Rastreabilidade Commit-Issue
 
@@ -270,17 +293,9 @@ Este Power inclui uma regra de rastreabilidade que garante que todo commit reali
 
 ### Instalação
 
-Para habilitar essa regra no seu workspace:
-
-1. Copie o steering file:
-   ```
-   powers/gitlab-trepr/steering/commit-issue-traceability.md → .kiro/steering/commit-issue-traceability.md
-   ```
-
-2. Copie o hook:
-   ```
-   powers/gitlab-trepr/hooks/enforce-commit-issue-link.kiro.hook → .kiro/hooks/enforce-commit-issue-link.kiro.hook
-   ```
+> **Instalação automática:** O steering file e o hook são copiados automaticamente durante o onboarding do Power (Step 1):
+> - `steering/commit-issue-traceability.md` → `.kiro/steering/commit-issue-traceability.md`
+> - `hooks/enforce-commit-issue-link.kiro.hook` → `.kiro/hooks/enforce-commit-issue-link.kiro.hook`
 
 ### Exceções
 
@@ -297,6 +312,7 @@ Commits isentos da obrigatoriedade (com confirmação explícita do usuário):
 | `mcp.json` | Configuração do MCP server |
 | `tre-root-v3.crt` | Certificado da CA raiz interna do TRE-PR (formato PEM) — para instalação manual caso necessário |
 | `skills/gitlab-operator/SKILL.md` | Skill de referência para uso do Power pelo agente — contém instruções de ativação, workflows e tratamento de erros |
+| `skills/git-operator/SKILL.md` | Skill de operações Git seguindo o workflow TRE-PR com Conventional Commits — branching, commits, rebase e merge requests |
 | `steering/commit-issue-traceability.md` | Steering file que define a regra de rastreabilidade commit-issue — todo commit deve referenciar uma issue do GitLab |
 | `hooks/enforce-commit-issue-link.kiro.hook` | Hook que intercepta comandos de commit e garante o vínculo com uma issue do GitLab |
 

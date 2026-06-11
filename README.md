@@ -33,8 +33,13 @@ kiro-powers/
 │       ├── POWER.md         # Documentação completa do Power
 │       ├── mcp.json         # Configuração do MCP server
 │       ├── tre-root-v3.crt  # Certificado da CA raiz interna (PEM)
-│       └── skills/
-│           └── gitlab-operator/SKILL.md  # Skill de referência para uso do Power
+│       ├── hooks/
+│       │   └── enforce-commit-issue-link.kiro.hook  # Hook de rastreabilidade commit-issue
+│       ├── skills/
+│       │   ├── git-operator/SKILL.md      # Skill de operações Git (workflow TRE-PR)
+│       │   └── gitlab-operator/SKILL.md   # Skill de referência para uso do Power
+│       └── steering/
+│           └── commit-issue-traceability.md  # Regra de rastreabilidade commit-issue
 ├── .kiro/
 │   ├── hooks/               # Hooks do agente (validação de idioma, sync de docs)
 │   ├── skills/              # Skills do agente (doc-writer, git-operator)
