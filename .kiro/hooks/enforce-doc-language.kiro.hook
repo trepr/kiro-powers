@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Enforce Documentation Language",
+  "description": "Before writing to any .md file, validates that the correct language is used: English for agent-targeted files (.kiro/steering/, .kiro/skills/) and Brazilian Portuguese for human-targeted files (CONTRIBUTING.md, powers/**/POWER.md). Blocks the write if the content violates the language rule.",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": [
+      "write"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before this write proceeds, check if the target file is a .md file. If it is, enforce the language rule:\n- Files under .kiro/steering/ or .kiro/skills/ must be written in ENGLISH.\n- Files named CONTRIBUTING.md or under powers/ (e.g., POWER.md) must be written in BRAZILIAN PORTUGUESE.\nIf the content being written violates the language rule, flag the violation and rewrite the content in the correct language before allowing the write to proceed. If the file is not a .md file, allow the write without intervention."
+  }
+}
