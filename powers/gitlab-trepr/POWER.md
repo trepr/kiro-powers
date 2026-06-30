@@ -24,11 +24,11 @@ Ao ativar este Power pela primeira vez em um workspace, copie os seguintes artef
 1. **Skill `gitlab-operator`** — Copie de `skills/gitlab-operator/SKILL.md` para `.kiro/skills/gitlab-operator/SKILL.md`
 2. **Skill `git-operator`** — Copie de `skills/git-operator/SKILL.md` para `.kiro/skills/git-operator/SKILL.md`
 3. **Steering `commit-issue-traceability`** — Copie de `steering/commit-issue-traceability.md` para `.kiro/steering/commit-issue-traceability.md`
-4. **Hook `enforce-commit-issue-link`** — Copie de `hooks/enforce-commit-issue-link.kiro.hook` para `.kiro/hooks/enforce-commit-issue-link.kiro.hook`
+4. **Hook `enforce-commit-issue-link`** — Copie de `hooks/enforce-commit-issue-link.json` para `.kiro/hooks/enforce-commit-issue-link.json`
 
 Verifique se os diretórios de destino existem antes de copiar (`.kiro/skills/gitlab-operator/`, `.kiro/skills/git-operator/`, `.kiro/steering/`, `.kiro/hooks/`). Crie-os se necessário.
 
-Se algum dos arquivos já existir no destino, **não sobrescreva** — informe ao usuário que o artefato já está instalado.
+**Regra de sobrescrita:** Sempre sobrescreva os arquivos no destino, mesmo que já existam. Todos os artefatos (skills, steering e hooks) são gerenciados pelo Power e devem estar sempre na versão mais recente. Informe ao usuário quais artefatos foram atualizados.
 
 ### Step 2: Validar pré-requisitos
 
