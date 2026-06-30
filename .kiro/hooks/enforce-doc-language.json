@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Enforce Documentation Language",
+      "description": "Before writing to any .md or .adoc file, validates that the correct language is used: English for agent-targeted files (.kiro/steering/, .kiro/skills/, AGENTS.md) and Brazilian Portuguese for human-targeted files (README.md, CONTRIBUTING.md, docs/). Blocks the write if the content violates the language rule.",
+      "trigger": "PreToolUse",
+      "matcher": "fs_write|fs_append|str_replace",
+      "action": {
+        "type": "agent",
+        "prompt": "Before this write proceeds, check if the target file is a .md or .adoc file. If it is, enforce the language rule:\n- Files under .kiro/steering/, .kiro/skills/, or named AGENTS.md must be written in ENGLISH.\n- Files named README.md, CONTRIBUTING.md, or under docs/ (both .md and .adoc) must be written in BRAZILIAN PORTUGUESE.\nIf the content being written violates the language rule, flag the violation and rewrite the content in the correct language before allowing the write to proceed. If the file is neither .md nor .adoc, allow the write without intervention."
+      },
+      "enabled": true
+    }
+  ]
+}
