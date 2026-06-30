@@ -30,3 +30,30 @@ Merges foxtrot ocorrem quando um merge reintroduz commits já presentes no maste
    ```
 
 ✨ Essa prática garante um histórico linear e facilita o rastreamento de mudanças no projeto.
+
+## 🏷️ Versionamento de Powers
+
+Cada Power utiliza versionamento de **1 nível** — um inteiro incremental (`1`, `2`, `3`, ...) que representa mudanças significativas na integração.
+
+### Convenção
+
+- A versão atual fica no campo `version` do front-matter do `POWER.md`
+- O histórico de mudanças é registrado no `CHANGELOG.md` dentro do diretório do Power
+- Tags Git seguem o formato `<power-name>/v<version>` (ex: `gitlab-trepr/v1`)
+
+### Quando incrementar a versão
+
+Incremente a versão quando houver mudanças que impactam consumidores do Power:
+
+- Adição ou remoção de skills, hooks ou steering files
+- Alteração na configuração do MCP server (`mcp.json`)
+- Mudança em pré-requisitos (versão do Node.js, certificados, etc.)
+- Alteração significativa no comportamento de onboarding
+
+Mudanças apenas na documentação (correções de texto, exemplos) **não** exigem incremento de versão.
+
+### Checklist para nova versão
+
+1. Atualize o campo `version` no front-matter do `POWER.md`
+2. Adicione uma nova entrada no `CHANGELOG.md` com a data e as mudanças
+3. Crie uma tag Git: `git tag <power-name>/v<version>`
