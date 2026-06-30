@@ -1,7 +1,7 @@
 ---
 name: "gitlab-trepr"
 displayName: "GitLab TRE-PR"
-version: "1"
+version: "2"
 description: "Integração com o GitLab interno do TRE-PR para gerenciar projetos, merge requests, issues, pipelines, wiki, releases, milestones e mais."
 keywords: ["gitlab", "tre-pr", "merge-request", "pipeline", "ci-cd", "issues"]
 author: "SDS/TRE-PR"
@@ -22,13 +22,15 @@ O MCP server utilizado é o `@zereight/mcp-gitlab`, que oferece cobertura ampla 
 Ao ativar este Power pela primeira vez em um workspace, copie os seguintes artefatos automaticamente para o workspace do consumidor:
 
 1. **Skill `gitlab-operator`** — Copie de `skills/gitlab-operator/SKILL.md` para `.kiro/skills/gitlab-operator/SKILL.md`
-2. **Skill `git-operator`** — Copie de `skills/git-operator/SKILL.md` para `.kiro/skills/git-operator/SKILL.md`
-3. **Steering `commit-issue-traceability`** — Copie de `steering/commit-issue-traceability.md` para `.kiro/steering/commit-issue-traceability.md`
-4. **Hook `enforce-commit-issue-link`** — Copie de `hooks/enforce-commit-issue-link.json` para `.kiro/hooks/enforce-commit-issue-link.json`
+2. **Skill `git-operator`** (dispatcher/router) — Copie de `skills/git-operator/SKILL.md` para `.kiro/skills/git-operator/SKILL.md`
+3. **Agent `git-operator`** (Haiku) — Copie de `agents/git-operator.md` para `.kiro/agents/git-operator.md`
+4. **Agent `git-resolver`** (auto) — Copie de `agents/git-resolver.md` para `.kiro/agents/git-resolver.md`
+5. **Steering `commit-issue-traceability`** — Copie de `steering/commit-issue-traceability.md` para `.kiro/steering/commit-issue-traceability.md`
+6. **Hook `enforce-commit-issue-link`** — Copie de `hooks/enforce-commit-issue-link.json` para `.kiro/hooks/enforce-commit-issue-link.json`
 
-Verifique se os diretórios de destino existem antes de copiar (`.kiro/skills/gitlab-operator/`, `.kiro/skills/git-operator/`, `.kiro/steering/`, `.kiro/hooks/`). Crie-os se necessário.
+Verifique se os diretórios de destino existem antes de copiar (`.kiro/skills/gitlab-operator/`, `.kiro/skills/git-operator/`, `.kiro/agents/`, `.kiro/steering/`, `.kiro/hooks/`). Crie-os se necessário.
 
-**Regra de sobrescrita:** Sempre sobrescreva os arquivos no destino, mesmo que já existam. Todos os artefatos (skills, steering e hooks) são gerenciados pelo Power e devem estar sempre na versão mais recente. Informe ao usuário quais artefatos foram atualizados.
+**Regra de sobrescrita:** Sempre sobrescreva os arquivos no destino, mesmo que já existam. Todos os artefatos (skills, steering, agents e hooks) são gerenciados pelo Power e devem estar sempre na versão mais recente. Informe ao usuário quais artefatos foram atualizados.
 
 ### Step 2: Validar pré-requisitos
 
@@ -271,13 +273,70 @@ Se não puder atualizar o Node.js, adicione ao `mcp.json`:
 | `USE_PIPELINE` | `true` | Habilita ferramentas de pipeline |
 | `NODE_OPTIONS` | `--use-system-ca` | Usa certificados do Windows Certificate Store |
 
-## Skill de Referência
+## Skills e Agents de Referência
 
-Este Power inclui uma skill de referência que orienta o agente sobre como utilizar as ferramentas MCP do GitLab de forma eficaz. A skill cobre ativação do Power, convenções de referência a projetos, workflows comuns, tratamento de erros e boas práticas de segurança.
+### Skill `gitlab-operator`
 
-Consulte a documentação completa da skill em [`skills/gitlab-operator/SKILL.md`](skills/gitlab-operator/SKILL.md).
+Skill que orienta o agente sobre como utilizar as ferramentas MCP do GitLab de forma eficaz. Cobre ativação do Power, convenções de referência a projetos, workflows comuns, tratamento de erros e boas práticas de segurança.
 
-> **Instalação automática:** A skill é copiada automaticamente para `.kiro/skills/gitlab-operator/SKILL.md` durante o onboarding do Power (Step 1).
+Consulte a documentação completa em [`skills/gitlab-operator/SKILL.md`](skills/gitlab-operator/SKILL.md).
+
+### Operações Git — Arquitetura Hierárquica (Skill + 2 Agents)
+
+A funcionalidade de operações Git utiliza uma **arquitetura hierárquica de 3 componentes** que otimiza custo e qualidade:
+
+```
+Usuário
+  │
+  ▼
+Skill dispatcher (ativação por keywords)
+  │
+  ├─── git-operator (Haiku) ──── operações rotineiras
+  │       commit, push, pull, branch, status, log, stash
+  │
+  └─── git-resolver (auto) ──── operações complexas
+          conflitos, merge request, diff analysis, halt conditions
+```
+
+| Componente | Localização no workspace | Modelo | Responsabilidade |
+|------------|--------------------------|--------|------------------|
+| **Skill** (router) | `.kiro/skills/git-operator/SKILL.md` | — | Ativação por keywords e roteamento para o agent correto |
+| **Agent `git-operator`** | `.kiro/agents/git-operator.md` | Haiku | Operações mecânicas: commit, push, pull, branch, status |
+| **Agent `git-resolver`** | `.kiro/agents/git-resolver.md` | Auto | Operações complexas: conflitos, MR, diff analysis |
+
+#### Por que essa arquitetura?
+
+- **Custo otimizado** — ~90% das operações Git são mecânicas e rodam no modelo mais leve (Haiku)
+- **Qualidade preservada** — O ~10% que exige raciocínio semântico (conflitos, análise de diff) usa modelo de maior capacidade (auto)
+- **Economia de contexto** — A skill dispatcher ocupa ~70 linhas; cada agent roda em contexto isolado
+- **Escalação automática** — Se o `git-operator` encontra conflitos durante um rebase, ele escala automaticamente para o `git-resolver`
+- **Ativação automática preservada** — A skill mantém keyword matching transparente
+
+#### Fluxo de execução — operação simples
+
+1. Usuário diz "faça o commit das alterações"
+2. A skill é ativada (keyword match: "commit")
+3. A skill roteia para `git-operator` (operação mecânica)
+4. O agent executa: status → stage → compose message → commit
+5. Resultado retorna ao contexto principal
+
+#### Fluxo de execução — operação complexa (com escalação)
+
+1. Usuário diz "faça o rebase na main"
+2. A skill roteia para `git-operator` (rebase simples)
+3. O agent executa `git rebase main` e encontra conflitos
+4. O agent retorna: `ESCALATE TO git-resolver: rebase produced 2 conflicts`
+5. A skill invoca `git-resolver` com o contexto de escalação
+6. O `git-resolver` resolve os conflitos semanticamente e completa o rebase
+
+#### Fluxo de execução — operação complexa (roteamento direto)
+
+1. Usuário diz "prepare o merge request para main"
+2. A skill é ativada (keyword match: "merge request")
+3. A skill roteia diretamente para `git-resolver` (operação complexa)
+4. O agent executa: rebase → build → checkstyle → push → create MR → verify pipeline
+
+> **Instalação automática:** A skill e ambos os agents são copiados durante o onboarding do Power (Step 1).
 
 ## Rastreabilidade Commit-Issue
 
@@ -313,7 +372,9 @@ Commits isentos da obrigatoriedade (com confirmação explícita do usuário):
 | `mcp.json` | Configuração do MCP server |
 | `tre-root-v3.crt` | Certificado da CA raiz interna do TRE-PR (formato PEM) — para instalação manual caso necessário |
 | `skills/gitlab-operator/SKILL.md` | Skill de referência para uso do Power pelo agente — contém instruções de ativação, workflows e tratamento de erros |
-| `skills/git-operator/SKILL.md` | Skill de operações Git seguindo o workflow TRE-PR com Conventional Commits — branching, commits, rebase e merge requests |
+| `skills/git-operator/SKILL.md` | Skill dispatcher/router de operações Git — ativa por keywords e roteia entre `git-operator` e `git-resolver` |
+| `agents/git-operator.md` | Agent (Haiku) para operações Git mecânicas — commit, push, pull, branch, status, stash |
+| `agents/git-resolver.md` | Agent (auto) para operações Git complexas — resolução de conflitos, preparação de MR, análise de diff |
 | `steering/commit-issue-traceability.md` | Steering file que define a regra de rastreabilidade commit-issue — todo commit deve referenciar uma issue do GitLab |
 | `hooks/enforce-commit-issue-link.kiro.hook` | Hook que intercepta comandos de commit e garante o vínculo com uma issue do GitLab |
 

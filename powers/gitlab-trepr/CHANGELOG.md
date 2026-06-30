@@ -4,6 +4,22 @@ Todas as mudanças notáveis deste Power serão documentadas neste arquivo.
 
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Este Power utiliza versionamento de 1 nível (inteiro incremental).
 
+## [2] — 2026-06-30
+
+### Adicionado
+
+- Agent `git-operator` (model: Haiku) — operações Git mecânicas com escalação automática
+- Agent `git-resolver` (model: auto) — resolução de conflitos, preparação de MR, análise de diff
+- Estratégias de resolução de conflitos por tipo de arquivo (pom.xml, Java, config)
+- Mecanismo de escalação automática entre agents (git-operator → git-resolver)
+- Diretório `agents/` no power para distribuição dos custom agents
+
+### Alterado
+
+- Skill `git-operator` refatorada para dispatcher/router leve (ativa por keywords, roteia entre agents)
+- Documentação (`POWER.md`) atualizada com arquitetura hierárquica de 3 componentes
+- Onboarding (Step 1) expandido para incluir ambos os agents na instalação
+
 ## [1] — 2025-06-30
 
 ### Adicionado
