@@ -98,13 +98,73 @@ Assisted-by: Kiro
 
 ## Project Key Resolution
 
-When searching or creating issues, the agent must determine the correct Jira project key:
+The agent must determine the **default Jira project key** for the current workspace. This key is used for contextual operations (commits, issue searches). The user can always query other projects explicitly (e.g., "list issues in INFRA") regardless of the default.
 
-1. **Extract from branch name**: If the current branch follows the pattern `PROJ-123-description` (e.g., `SISCONV-78-oauth-login`), extract the project key from the issue key prefix
-2. **Extract from known issue key**: If the user has previously referenced an issue key in the conversation, use the same project key prefix
-3. **Ask the user**: If the project key cannot be determined from the branch name or context, ask the user: "Which Jira project does this work belong to? (e.g., SISCONV, INFRA)"
+### Resolution Order (priority highest to lowest)
 
-The Jira instance is located at https://jira.tre-pr.jus.br.
+1. **Persisted configuration** — Check if `.kiro/jira-project.json` exists in the workspace root. If it does and contains a valid `defaultProjectKey`, use it immediately.
+
+2. **Maven `pom.xml` — `<issueManagement>` section** — Look for a `pom.xml` at the workspace root (or parent POM in multi-module projects). If it contains an `<issueManagement>` section with a URL pointing to the Jira instance, extract the project key:
+   ```xml
+   <issueManagement>
+       <system>Jira</system>
+       <url>https://jira.tre-pr.jus.br/browse/SISCONV</url>
+   </issueManagement>
+   ```
+   Extract the last path segment of the URL as the candidate project key (e.g., `SISCONV`).
+
+3. **Maven `pom.xml` — `<artifactId>`** — If `<issueManagement>` is absent, extract the `<artifactId>` from the root `pom.xml`, convert to uppercase, and treat as a **candidate** key (e.g., `sisconv-api` → `SISCONV`). Strip common suffixes: `-api`, `-web`, `-app`, `-service`, `-server`, `-core`, `-parent`.
+
+4. **Ask the user** — If none of the above sources yield a key, ask: "Which Jira project does this workspace belong to? (e.g., SISCONV, INFRA)"
+
+### Candidate Validation
+
+Keys obtained from sources 2 and 3 (pom.xml) are **candidates** that MUST be validated before use:
+
+1. Activate the `jira-trepr` power
+2. Query the Jira API to verify the project exists: search for the project by key
+3. If the project exists → accept the key
+4. If the project does NOT exist → discard the candidate and fall through to the next source in the resolution order
+
+Keys from source 1 (persisted config) are considered already validated — they were previously confirmed by the user or validated against the Jira API.
+
+### Persistence
+
+Once a valid project key is determined (from any source), persist it to `.kiro/jira-project.json` in the workspace root:
+
+```json
+{
+  "defaultProjectKey": "SISCONV",
+  "resolvedFrom": "pom.xml/issueManagement",
+  "resolvedAt": "2026-07-01",
+  "jiraUrl": "https://jira.tre-pr.jus.br"
+}
+```
+
+The `resolvedFrom` field records the source for traceability:
+- `"pom.xml/issueManagement"` — extracted from `<issueManagement>` URL
+- `"pom.xml/artifactId"` — derived from `<artifactId>` and validated
+- `"user"` — explicitly provided by the user
+
+### Multi-module Maven Projects
+
+For multi-module Maven projects, always resolve from the **root (parent) POM**, not individual module POMs. The Jira project key applies to the entire workspace — there is only one key per workspace.
+
+### Cross-project Queries
+
+The default project key is used **only for contextual operations** (commit traceability, default JQL scope). The user can always query any project explicitly:
+
+- "List issues in INFRA" → searches project INFRA regardless of default
+- "Create a bug in DEVOPS" → creates in DEVOPS regardless of default
+- "Search PROJ-456" → fetches from whatever project PROJ is
+
+The default key restricts only:
+- The JQL `project = PROJ` clause in automatic issue searches during commits
+- The project used when creating issues automatically (commit traceability workflow)
+
+### Changing the Default
+
+If the user says "change the Jira project to INFRA" or the workspace context changes, update `.kiro/jira-project.json` with the new key and set `resolvedFrom` to `"user"`.
 
 ## Exceptions
 

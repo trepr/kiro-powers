@@ -61,3 +61,6 @@ Dockerfile    text eol=lf
 *.pdf         binary
 
 # Project attributes
+
+*.mjs         text eol=lf
+*.ps1         text eol=lf

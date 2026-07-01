@@ -15,7 +15,7 @@ Power para integração com a instância interna do Jira Server do TRE-PR (`jira
 
 O Jira Server utilizado é a versão **7.3.3**, com a **REST API v2** (endpoint base `/rest/api/2/`) e a **Agile API** (endpoint base `/rest/agile/1.0/`).
 
-O MCP server utilizado é o `@aashari/mcp-server-atlassian-jira`, que oferece cobertura da API REST do Jira e suporte a instâncias self-hosted com autenticação via Basic Auth.
+O MCP server utilizado é o `mcp-atlassian` (pacote Python, executado via `uvx`), que oferece cobertura ampla da API REST do Jira com suporte a instâncias Server/Data Center self-hosted via autenticação Basic Auth. Este pacote expõe 72+ ferramentas incluindo busca JQL, CRUD de issues, transições, comentários, worklogs, boards, sprints e mais.
 
 ## Onboarding
 
@@ -41,13 +41,23 @@ Verifique se os diretórios de destino existem antes de copiar (`.kiro/skills/ji
 
 Verifique se o ambiente atende aos requisitos mínimos:
 
-- **Node.js** 22+ (necessário para `--use-system-ca`)
-- **Certificado da CA interna** do TRE-PR instalado no Windows Certificate Store (normalmente já distribuído via GPO na rede interna)
+- **Node.js** 22+ (necessário para o credential helper com `--use-system-ca`)
+- **Python 3.10+** e **uv** (necessários para executar o MCP server via `uvx`)
+- **Certificado da CA interna** do TRE-PR instalado no Certificate Store do OS (normalmente já distribuído via GPO na rede interna)
 
 Comandos de validação:
 ```powershell
 node --version    # Deve retornar v22.x.x ou superior
-npx --version     # Deve estar disponível no PATH
+uvx --version     # Deve estar disponível no PATH
+```
+
+Se `uvx` não estiver instalado:
+```powershell
+# Windows (via winget):
+winget install astral-sh.uv
+
+# Linux/macOS:
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 Se algum pré-requisito não for atendido, informe ao usuário com instruções de resolução e **não prossiga** com as operações do Power até que esteja resolvido.
@@ -78,30 +88,92 @@ Se não puder atualizar o Node.js, configure a variável `NODE_EXTRA_CA_CERTS` a
 
 Esta alternativa deve ser adicionada à seção `env` do `mcp.json`. No entanto, a recomendação é atualizar para Node.js 22+ para uma solução mais limpa e consistente com o Power `gitlab-trepr`.
 
-## Autenticação Basic Auth
+## Autenticação
 
-Este Power utiliza **Basic Auth** (autenticação HTTP básica) com as credenciais do usuário no Jira do TRE-PR. As credenciais são fornecidas via variáveis de ambiente — nunca armazenadas diretamente em arquivos de configuração versionados.
+Este Power utiliza **Basic Auth** (autenticação HTTP básica) com as credenciais do usuário no Jira do TRE-PR. As credenciais são resolvidas automaticamente pelo **credential helper** (`credential-helper.mjs`) na seguinte ordem de prioridade:
 
-### Configuração
+1. **Variáveis de ambiente** (`JIRA_USERNAME` + `JIRA_PASSWORD`) — se definidas, são utilizadas diretamente
+2. **Credential store nativo do OS** — se as variáveis não estiverem definidas, busca no gerenciador de credenciais do sistema operacional
+3. **Erro com instruções** — se nenhuma fonte for encontrada, exibe mensagem com as opções de configuração
 
-As variáveis de ambiente necessárias são:
+### Configuração via Credential Store (recomendado)
 
-| Variável | Descrição |
-|----------|-----------|
-| `JIRA_USERNAME` | Nome de usuário para autenticação no Jira (mesmo usuário de login na rede) |
-| `JIRA_PASSWORD` | Senha do usuário ou API token gerado no Jira |
+Armazene suas credenciais no gerenciador nativo do sistema operacional. Isso evita manter senhas em variáveis de ambiente ou arquivos de configuração.
 
-**Sobre o `JIRA_PASSWORD`:** O valor pode ser:
+#### Windows (Credential Manager)
+
+```powershell
+# Armazenar credenciais (solicita a senha interativamente):
+powershell -ExecutionPolicy Bypass -File powers/jira-trepr/store-credential.ps1
+```
+
+O script `store-credential.ps1`:
+- Assume o username do usuário logado no Windows (Active Directory)
+- Solicita a senha interativamente (input mascarado — não aparece no terminal)
+- Armazena no Windows Credential Manager via API nativa (`CredWrite` do `advapi32.dll`)
+
+Se precisar especificar um username diferente:
+```powershell
+powershell -ExecutionPolicy Bypass -File powers/jira-trepr/store-credential.ps1 -Username outro.usuario
+```
+
+Para verificar ou remover:
+```powershell
+cmdkey /list:jira-trepr      # Verificar
+cmdkey /delete:jira-trepr    # Remover
+```
+
+O credential helper lê as credenciais via API nativa do Windows (`CredRead` do `advapi32.dll`) — não requer módulos PowerShell adicionais.
+
+#### Linux (libsecret / GNOME Keyring)
+
+```bash
+# Pré-requisito:
+sudo apt install libsecret-tools   # Debian/Ubuntu
+
+# Armazenar credenciais:
+echo -n 'seu.usuario' | secret-tool store --label='Jira TRE-PR' service jira-trepr field username
+echo -n 'sua-senha' | secret-tool store --label='Jira TRE-PR' service jira-trepr field password
+```
+
+#### macOS (Keychain)
+
+```bash
+security add-generic-password -s jira-trepr -a seu.usuario -w sua-senha
+```
+
+### Configuração via Variáveis de Ambiente (alternativa)
+
+Se preferir não utilizar o credential store, defina as variáveis de ambiente no seu perfil de shell:
+
+```powershell
+# PowerShell (Windows):
+$env:JIRA_USERNAME = "seu.usuario"
+$env:JIRA_API_TOKEN = "sua-senha"
+
+# Bash/Zsh (Linux/macOS):
+export JIRA_USERNAME="seu.usuario"
+export JIRA_API_TOKEN="sua-senha"
+```
+
+As variáveis de ambiente têm **prioridade sobre o credential store** — se estiverem definidas, o credential helper as utiliza diretamente sem consultar o OS.
+
+> **Nota:** A variável `JIRA_PASSWORD` também é aceita como alias de `JIRA_API_TOKEN` para retrocompatibilidade.
+
+### Sobre o valor da senha
+
+O valor da senha (`JIRA_PASSWORD` ou o campo password no credential store) pode ser:
 - A **senha de rede** do usuário (mesma utilizada para login no Jira via browser)
-- Um **API token** gerado nas configurações pessoais do Jira (se o Jira Server da instância suportar)
+- Um **API token** gerado nas configurações pessoais do Jira (se a instância suportar)
 
-A utilização de API token é preferível por ser mais segura e permitir revogação independente da senha de rede, porém a instância 7.3.3 pode não oferecer essa funcionalidade. Nesse caso, utilize a senha de rede.
+A utilização de API token é preferível por ser mais segura e permitir revogação independente da senha de rede, porém a instância 7.3.3 pode não oferecer essa funcionalidade.
 
 ### Segurança
 
-- Credenciais **nunca são armazenadas** em `mcp.json` — apenas referências a variáveis de ambiente (`${JIRA_USERNAME}`, `${JIRA_PASSWORD}`)
+- Credenciais **nunca são armazenadas** em `mcp.json` ou qualquer arquivo versionado
+- O credential helper resolve credenciais em tempo de execução e as injeta apenas no processo do MCP server
 - O agente opera com as **mesmas permissões** que o usuário autenticado no Jira
-- Se as variáveis de ambiente não estiverem definidas, o MCP server falhará na inicialização com mensagem indicando quais variáveis estão ausentes
+- Se nenhuma credencial for encontrada, o helper exibe mensagem de erro e encerra sem iniciar o server
 
 ## Workflows Comuns
 
@@ -193,10 +265,13 @@ Se não puder atualizar o Node.js, adicione ao `mcp.json` na seção `env`:
 **Causa**: Credenciais inválidas — `JIRA_USERNAME` ou `JIRA_PASSWORD` incorretos ou não definidos.
 
 **Solução**:
-1. Verifique se as variáveis de ambiente `JIRA_USERNAME` e `JIRA_PASSWORD` estão definidas
-2. Confirme que o nome de usuário está correto (mesmo utilizado para login no Jira via browser)
-3. Confirme que a senha está correta (tente acessar o Jira pelo browser com as mesmas credenciais)
-4. Se a senha da rede foi alterada recentemente, atualize a variável `JIRA_PASSWORD`
+1. Verifique se as credenciais estão armazenadas no credential store:
+   - Windows: `cmdkey /list:jira-trepr`
+   - Linux: `secret-tool lookup service jira-trepr field username`
+2. Ou verifique se as variáveis de ambiente `JIRA_USERNAME` e `JIRA_PASSWORD` estão definidas
+3. Confirme que o nome de usuário está correto (mesmo utilizado para login no Jira via browser)
+4. Confirme que a senha está correta (tente acessar o Jira pelo browser com as mesmas credenciais)
+5. Se a senha da rede foi alterada, atualize no credential store ou na variável de ambiente
 
 ### Erro: "404 Not Found" ao acessar issue ou projeto
 
@@ -212,12 +287,12 @@ Se não puder atualizar o Node.js, adicione ao `mcp.json` na seção `env`:
 **Causa**: Node.js não instalado, versão incompatível, npx não disponível ou variáveis de ambiente ausentes.
 
 **Solução**:
-1. Verifique a versão do Node.js: `node --version` (precisa ser 22+)
-2. Verifique se `npx` está disponível: `npx --version`
-3. Verifique se as variáveis de ambiente estão definidas:
+1. Verifique a versão do Node.js: `node --version` (precisa ser 22+ para o credential helper)
+2. Verifique se `uvx` está disponível: `uvx --version` (precisa estar no PATH)
+3. Verifique se as credenciais estão disponíveis (credential store ou env vars):
    ```powershell
-   echo $env:JIRA_USERNAME
-   echo $env:JIRA_PASSWORD
+   # Testar o credential helper diretamente:
+   node --use-system-ca powers/jira-trepr/credential-helper.mjs
    ```
 4. Desinstale e reinstale o Power no painel de Powers
 5. Verifique logs do MCP server para mensagens de erro detalhadas
@@ -237,9 +312,20 @@ Se não puder atualizar o Node.js, adicione ao `mcp.json` na seção `env`:
 | Variável | Valor | Descrição |
 |----------|-------|-----------|
 | `JIRA_URL` | `https://jira.tre-pr.jus.br` | URL base da instância Jira |
-| `JIRA_USERNAME` | `${JIRA_USERNAME}` | Nome de usuário para Basic Auth |
-| `JIRA_PASSWORD` | `${JIRA_PASSWORD}` | Senha ou API token do usuário |
-| `NODE_OPTIONS` | `--use-system-ca` | Usa certificados do Windows Certificate Store |
+| `JIRA_SSL_VERIFY` | `false` | Desabilita verificação SSL no pacote Python (fallback para CA interna) |
+
+### Resolvidas pelo credential helper
+
+| Variável | Fonte | Descrição |
+|----------|-------|-----------|
+| `JIRA_USERNAME` | Env var ou credential store | Nome de usuário para Basic Auth |
+| `JIRA_API_TOKEN` | Env var ou credential store | Senha ou API token do usuário (aceita `JIRA_PASSWORD` como alias) |
+
+### Flags do Node.js
+
+| Flag | Descrição |
+|------|-----------|
+| `--use-system-ca` | Confia nos certificados do OS (passada via args no mcp.json) |
 
 ## Skill de Referência
 
@@ -282,8 +368,8 @@ Os Powers `jira-trepr` e `gitlab-trepr` são complementares e podem coexistir no
 | Aspecto | gitlab-trepr | jira-trepr |
 |---------|--------------|------------|
 | MCP Server name | `gitlab` | `jira` |
-| Pacote | `@zereight/mcp-gitlab` | `@aashari/mcp-server-atlassian-jira` |
-| Autenticação | OAuth2 (browser) | Basic Auth (env vars) |
+| Pacote | `@zereight/mcp-gitlab` | `mcp-atlassian` |
+| Autenticação | OAuth2 (browser) | Basic Auth (credential helper) |
 | SSL | `--use-system-ca` | `--use-system-ca` |
 | Propósito | Código-fonte, CI/CD, merge requests | Gestão de demandas, sprints, worklogs |
 
@@ -304,6 +390,9 @@ Cada Power utiliza seu próprio MCP server independente, com nomes distintos (`j
 |---------|-----------|
 | `POWER.md` | Esta documentação |
 | `mcp.json` | Configuração do MCP server |
+| `credential-helper.mjs` | Script Node.js que resolve credenciais do credential store nativo do OS (Windows/Linux/macOS) e inicia o MCP server |
+| `read-credential.ps1` | Script PowerShell que lê credenciais do Windows Credential Manager via API nativa (CredRead) |
+| `store-credential.ps1` | Script PowerShell interativo para armazenar credenciais no Windows Credential Manager (solicita senha com input mascarado) |
 | `tre-root-v3.crt` | Certificado da CA raiz interna do TRE-PR (formato PEM) |
 | `skills/jira-operator/SKILL.md` | Skill de referência para uso do Power pelo agente |
 | `steering/commit-jira-traceability.md` | Steering file que define a regra de rastreabilidade commit-issue |
@@ -311,6 +400,8 @@ Cada Power utiliza seu próprio MCP server independente, com nomes distintos (`j
 
 ---
 
-**Package:** `@aashari/mcp-server-atlassian-jira`
+**Package:** `mcp-atlassian` (Python, via `uvx`)
 **MCP Server:** jira
-**Node.js mínimo:** 22+
+**Node.js mínimo:** 22+ (credential helper)
+**Python mínimo:** 3.10+ (MCP server)
+**Credential helper:** credential-helper.mjs

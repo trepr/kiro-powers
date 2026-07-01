@@ -1,13 +1,11 @@
 {
   "mcpServers": {
     "jira": {
-      "command": "npx",
-      "args": ["-y", "@aashari/mcp-server-atlassian-jira"],
+      "command": "node",
+      "args": ["--use-system-ca", "${userHome}/.kiro/powers/installed/jira-trepr/credential-helper.mjs"],
       "env": {
         "JIRA_URL": "https://jira.tre-pr.jus.br",
-        "JIRA_USERNAME": "${JIRA_USERNAME}",
-        "JIRA_PASSWORD": "${JIRA_PASSWORD}",
-        "NODE_OPTIONS": "--use-system-ca"
+        "JIRA_SSL_VERIFY": "false"
       }
     }
   }
