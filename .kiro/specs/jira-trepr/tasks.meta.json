@@ -1,0 +1,169 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Criar `powers/jira-trepr/mcp.json` com a configuração do MCP server": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925583183
+      },
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925595002
+      },
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925773578
+      }
+    ],
+    "2.1 Criar `powers/jira-trepr/skills/jira-operator/SKILL.md`": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925583507
+      },
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925780632
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782926450552
+      }
+    ],
+    "3.1 Criar `powers/jira-trepr/steering/commit-jira-traceability.md`": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925583632
+      },
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925782189
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782926202117
+      }
+    ],
+    "3.2 Criar `powers/jira-trepr/hooks/enforce-commit-jira-link.json`": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925583700
+      },
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925782338
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782926203586
+      }
+    ],
+    "4. Checkpoint - Validar estrutura parcial": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925583768
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782927172072
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782927197499
+      }
+    ],
+    "5.1 Copiar `powers/gitlab-trepr/tre-root-v3.crt` para `powers/jira-trepr/tre-root-v3.crt`": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925583835
+      },
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925784670
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782926205398
+      }
+    ],
+    "5.2 Criar `powers/jira-trepr/POWER.md` com documentação completa em pt-BR": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925583902
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782926462438
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782927158883
+      }
+    ],
+    "6. Final checkpoint - Validar todos os artefatos": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925583972
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782927204521
+      },
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782927216632
+      }
+    ],
+    "1. Criar estrutura de diretórios e configuração MCP": [
+      {
+        "executionId": "bee6bcd2-111a-4606-8742-516960f634ba",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782925773634
+      }
+    ],
+    "3. Criar steering file e hook de rastreabilidade": [
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782926203666
+      }
+    ],
+    "2. Criar skill de referência": [
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782926450652
+      }
+    ],
+    "5. Copiar certificado CA e criar documentação principal": [
+      {
+        "executionId": "7b036e69-ae1f-4ac9-981f-dafad35420a3",
+        "chatSessionId": "sess_fef39b26-5f74-4bf9-bcdf-8a212c269c46",
+        "timestamp": 1782927158970
+      }
+    ]
+  }
+}
