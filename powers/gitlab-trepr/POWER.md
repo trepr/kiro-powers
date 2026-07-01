@@ -1,5 +1,6 @@
 ---
 name: "gitlab-trepr"
+icon: "icon.svg"
 displayName: "GitLab TRE-PR"
 version: "2"
 description: "Integração com o GitLab interno do TRE-PR para gerenciar projetos, merge requests, issues, pipelines, wiki, releases, milestones e mais."

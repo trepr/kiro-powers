@@ -1,5 +1,6 @@
 ---
 name: "jira-trepr"
+icon: "icon.svg"
 displayName: "Jira TRE-PR"
 version: "1"
 description: "Integração com o Jira Server interno do TRE-PR para gerenciar issues, projetos, boards, sprints e worklogs através do Model Context Protocol."
