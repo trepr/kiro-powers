@@ -32,6 +32,21 @@ Verifique se os diretórios de destino existem antes de copiar (`.kiro/skills/gi
 
 **Regra de sobrescrita:** Sempre sobrescreva os arquivos no destino, mesmo que já existam. Todos os artefatos (skills, steering, agents e hooks) são gerenciados pelo Power e devem estar sempre na versão mais recente. Informe ao usuário quais artefatos foram atualizados.
 
+### Step 1.1: Exclusão mútua de hooks de rastreabilidade
+
+Os Powers `gitlab-trepr` e `jira-trepr` possuem hooks de rastreabilidade commit-issue mutuamente exclusivos — apenas **um** deve estar habilitado por workspace, conforme o sistema onde as issues são registradas.
+
+Ao copiar o hook `enforce-commit-issue-link.json` para o workspace:
+
+1. **Verifique** se o arquivo `.kiro/hooks/enforce-commit-jira-link.json` (hook do `jira-trepr`) existe no workspace
+2. **Se existir e estiver habilitado** (`"enabled": true`):
+   - Pergunte ao usuário: "Este workspace possui o hook de rastreabilidade do Jira ativo. As issues deste projeto são registradas no GitLab ou no Jira?"
+   - Se o usuário responder **GitLab**: desabilite o hook do Jira (set `"enabled": false` em `.kiro/hooks/enforce-commit-jira-link.json`) e habilite o do GitLab (`"enabled": true`)
+   - Se o usuário responder **Jira**: mantenha o hook do Jira ativo e **não habilite** o hook do GitLab (deixe `"enabled": false`)
+3. **Se não existir ou estiver desabilitado**: habilite o hook do GitLab (`"enabled": true` em `.kiro/hooks/enforce-commit-issue-link.json`)
+
+> **Regra:** Nunca habilite ambos os hooks simultaneamente. Um workspace deve ter no máximo um hook de rastreabilidade de issues ativo.
+
 ### Step 2: Validar pré-requisitos
 
 Verifique se o ambiente atende aos requisitos mínimos:
